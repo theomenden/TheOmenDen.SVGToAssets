@@ -2,12 +2,23 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<!-- Svg renders through System.Drawing (GDI+), which is Windows-only. -->
-		<TargetFramework>net10.0-windows</TargetFramework>
+		<!-- Plain net10.0: PackAsTool rejects platform TFMs (NETSDK1146).
+		     Linux/macOS work via libgdiplus only while Svg pulls System.Drawing.Common 5.x; 6.0+ is Windows-only. -->
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<!-- Console app: there is no SynchronizationContext to escape. -->
 		<NoWarn>$(NoWarn);MA0004</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>svgtoassets</ToolCommandName>
+		<PackageId>SvgToAssets</PackageId>
+		<Version>0.1.0</Version>
+		<Authors>Andrew Beers</Authors>
+		<Description>Rasterizes SVGs into WinUI app assets and multi-size .ico files.</Description>
+		<PackageTags>svg;winui;assets;icon;png</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
