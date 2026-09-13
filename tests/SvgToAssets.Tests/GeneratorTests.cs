@@ -1,14 +1,14 @@
 using System.Buffers.Binary;
 using System.CommandLine;
-using System.Drawing;
 using System.Globalization;
 using Bogus;
 using Bogus.Text;
 using Meziantou.Framework;
 using Serilog;
 using Shouldly;
+using SkiaSharp;
 using Spectre.Console;
-using Svg;
+using Svg.Skia;
 using SvgToAssets.Commands;
 using SvgToAssets.Enums;
 using SvgToAssets.Generators;
@@ -65,21 +65,21 @@ public sealed class GeneratorTests
         using var rasterizer = CreateRasterizer(faker);
 
         // Act
-        var renders = await Task.WhenAll(sizes.Select(size => Task.Run(async () =>
+        var renders = await Task.WhenAll(sizes.Select(size => Task.Run(() =>
         {
-            await using var png = await rasterizer.RenderPngAsync(size, size, cancellationToken: CancellationToken);
-            using var bitmap = new Bitmap(png);
+            using var png = rasterizer.RenderPng(size, size);
+            using var bitmap = SKBitmap.Decode(png);
 
-            // The test SVG is one full-bleed rect: a render sized for another call leaves a transparent corner.
-            return (Size: size, Opaque: bitmap.GetPixel(0, 0).A == 255 && bitmap.GetPixel(size - 1, size - 1).A == 255);
-        })));
+            // The test SVG is one full-bleed rect: a misplaced or mis-scaled render leaves a transparent corner.
+            return (Size: size, Opaque: bitmap.GetPixel(0, 0).Alpha == 255 && bitmap.GetPixel(size - 1, size - 1).Alpha == 255);
+        }, CancellationToken)));
 
         // Assert
         renders.ShouldAllBe(r => r.Opaque);
     }
 
     [Fact]
-    public async Task IconGenerator_ShouldPointDirectoryAtPngEntriesOfRequestedSizes_WhenCreatingIcon()
+    public void IconGenerator_ShouldPointDirectoryAtPngEntriesOfRequestedSizes_WhenCreatingIcon()
     {
         // Arrange
         var faker = CreateFaker();
@@ -88,7 +88,7 @@ public sealed class GeneratorTests
         var generator = new IconGenerator(rasterizer);
 
         // Act
-        await using var icon = await generator.CreateIconAsync(sizes, CancellationToken);
+        using var icon = generator.CreateIcon(sizes);
         var bytes = new byte[icon.Length];
         icon.ReadExactly(bytes);
 
@@ -291,7 +291,7 @@ public sealed class GeneratorTests
         return ($"{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(string.Join(' ', words))}.svg", string.Join('-', words));
     }
 
-    private static SvgRasterizer CreateRasterizer(Faker faker) => new(SvgDocument.FromSvg<SvgDocument>(CreateSvg(faker)));
+    private static SvgRasterizer CreateRasterizer(Faker faker) => new(SKSvg.CreateFromSvg(CreateSvg(faker)));
 
     private static async Task WriteSvgAsync(Faker faker, FullPath path)
     {

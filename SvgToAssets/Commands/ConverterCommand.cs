@@ -165,7 +165,7 @@ internal sealed class ConverterCommand : RootCommand
             var sizes = WinUiAssetCatalog.GetIconSizes(category);
             Log.Information("Generating {IconFileName} for {Svg} with sizes {Sizes}", IconFileName, svgPath.Name, sizes);
 
-            await using var icon = await new IconGenerator(rasterizer).CreateIconAsync(sizes, cancellationToken);
+            await using var icon = new IconGenerator(rasterizer).CreateIcon(sizes);
             totalSize = totalSize.Add(await icon.WriteToFileAsync(outputDirectory / IconFileName, cancellationToken));
             progress.Increment(1);
             fileCount++;

@@ -26,10 +26,10 @@ internal sealed class AssetsGenerator(SvgRasterizer rasterizer)
         // Atomic<T> gives atomic updates to a non-primitive struct, so the total stays a ByteSize throughout.
         var totalSize = new Atomic<ByteSize>();
 
-        // Drawing is serialized by the rasterizer's document lock; PNG encoding and file I/O run in parallel.
+        // Rendering, PNG encoding and file I/O all run in parallel.
         await Parallel.ForEachAsync(assets, cancellationToken, async (asset, ct) =>
         {
-            await using var png = await rasterizer.RenderPngAsync(asset.Width, asset.Height, asset.ContentScale, ct);
+            await using var png = rasterizer.RenderPng(asset.Width, asset.Height, asset.ContentScale);
             var size = await png.WriteToFileAsync(outputDirectory / asset.FileName, ct);
             totalSize.Accumulate(size);
             progress?.Report(asset);

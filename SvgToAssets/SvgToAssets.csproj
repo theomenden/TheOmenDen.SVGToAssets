@@ -2,8 +2,6 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<!-- Plain net10.0: PackAsTool rejects platform TFMs (NETSDK1146).
-		     Linux/macOS work via libgdiplus only while Svg pulls System.Drawing.Common 5.x; 6.0+ is Windows-only. -->
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -48,8 +46,24 @@
 		<PackageReference Include="Serilog.Sinks.Debug" />
 		<PackageReference Include="SerilogAnalyzer" />
 		<PackageReference Include="Spectre.Console" />
-		<PackageReference Include="Svg" />
+		<PackageReference Include="Svg.Skia" />
+		<!-- SkiaSharp brings Windows and macOS natives on its own; Linux needs this. -->
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" />
 		<PackageReference Include="System.CommandLine" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<!-- Platforms whose Skia/HarfBuzz natives go into the tool package; anywhere else Skia fails to load. -->
+		<ToolNativeRuntimes>;win-x64;win-arm64;osx;linux-x64;linux-arm64;linux-musl-x64;linux-musl-arm64;</ToolNativeRuntimes>
+	</PropertyGroup>
+
+	<!-- ponytail: one portable package carries every kept platform; RID-specific tool packages would ship one each if size matters. -->
+	<Target Name="TrimToolNativeAssets" AfterTargets="ComputeResolvedFilesToPublishList">
+		<ItemGroup>
+			<!-- Drops unlisted platforms and the ~390 MB of .pdb files the Windows natives ship with. -->
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+				Condition="'%(ResolvedFileToPublish.AssetType)' == 'native' And ('%(ResolvedFileToPublish.Extension)' == '.pdb' Or !$(ToolNativeRuntimes.Contains(';%(ResolvedFileToPublish.RuntimeIdentifier);')))" />
+		</ItemGroup>
+	</Target>
 
 </Project>

@@ -1,10 +1,8 @@
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using DotNext.Threading;
 using Meziantou.Framework;
 using Microsoft.IO;
+using SkiaSharp;
 using Svg;
+using Svg.Skia;
 using SvgToAssets.Managers;
 
 namespace SvgToAssets.Generators;
@@ -13,33 +11,29 @@ namespace SvgToAssets.Generators;
 /// Renders one SVG document to PNGs of arbitrary canvas sizes.
 /// </summary>
 /// <remarks>
-/// Safe to call concurrently: rendering resizes the shared document, so each resize-and-draw
-/// runs under an <see cref="AsyncExclusiveLock"/>. PNG encoding happens outside the lock.
+/// Safe to call concurrently: the SVG is recorded once into an immutable <see cref="SKPicture"/>,
+/// which each render plays back onto its own bitmap.
 /// </remarks>
 internal sealed class SvgRasterizer : IDisposable
 {
-    private readonly SvgDocument _document;
-    private readonly AsyncExclusiveLock _documentLock = new();
+    private readonly SKSvg _svg;
+    private readonly SKPicture _picture;
 
     /// <summary>
-    /// Wraps <paramref name="document"/>, giving it a view box when it has none so it scales instead of clipping.
+    /// Takes ownership of the loaded <paramref name="svg"/>.
     /// </summary>
-    public SvgRasterizer(SvgDocument document)
+    public SvgRasterizer(SKSvg svg)
     {
-        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(svg);
 
-        if (document.ViewBox.Width <= 0 || document.ViewBox.Height <= 0)
+        // Svg.Skia sizes the picture from width/height, else the view box, else the content bounds.
+        if (svg.Picture is not { CullRect: { Width: > 0, Height: > 0 } } picture)
         {
-            var size = document.GetDimensions();
-            if (size.Width <= 0 || size.Height <= 0)
-            {
-                throw new InvalidDataException("The SVG has neither a viewBox nor a usable width and height.");
-            }
-
-            document.ViewBox = new SvgViewBox(0, 0, size.Width, size.Height);
+            throw new InvalidDataException("The SVG has nothing to render.");
         }
 
-        _document = document;
+        _svg = svg;
+        _picture = picture;
     }
 
     /// <summary>
@@ -50,7 +44,21 @@ internal sealed class SvgRasterizer : IDisposable
         SvgDocument.ResolveExternalImages = ExternalType.Local;
         SvgDocument.ResolveExternalElements = ExternalType.Local;
 
-        return new SvgRasterizer(SvgDocument.Open(path));
+        var svg = new SKSvg();
+
+        // Read at load time: an unresolvable image should leave a gap, not a grey placeholder in every asset.
+        svg.Settings.EnableBrokenImagePlaceholders = false;
+
+        try
+        {
+            svg.Load(path);
+            return new SvgRasterizer(svg);
+        }
+        catch
+        {
+            svg.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -58,8 +66,7 @@ internal sealed class SvgRasterizer : IDisposable
     /// preserving its aspect ratio within <paramref name="contentScale"/> of the canvas.
     /// </summary>
     /// <returns>A pooled stream holding the PNG, positioned at 0. The caller owns it.</returns>
-    public async ValueTask<RecyclableMemoryStream> RenderPngAsync(
-        int width, int height, float contentScale = 1f, CancellationToken cancellationToken = default)
+    public RecyclableMemoryStream RenderPng(int width, int height, float contentScale = 1f)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
@@ -70,40 +77,40 @@ internal sealed class SvgRasterizer : IDisposable
         var boxWidth = Math.Max(1, (int)MathF.Round(width * contentScale));
         var boxHeight = Math.Max(1, (int)MathF.Round(height * contentScale));
 
-        using var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+        // Fit and center within the box, as the default preserveAspectRatio (xMidYMid meet) does.
+        var bounds = _picture.CullRect;
+        var scale = Math.Min(boxWidth / bounds.Width, boxHeight / bounds.Height);
 
-        // Width/Height are shared document state: resizing and drawing must be one atomic step.
-        await _documentLock.AcquireAsync(cancellationToken);
-        try
+        using var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul));
+        using (var canvas = new SKCanvas(bitmap))
         {
-            // The SVG's own preserveAspectRatio (default xMidYMid meet) fits and centers the view box in this box.
-            _document.Width = new SvgUnit(SvgUnitType.Pixel, boxWidth);
-            _document.Height = new SvgUnit(SvgUnitType.Pixel, boxHeight);
-
-            using var renderer = SvgRenderer.FromImage(bitmap);
-            renderer.TranslateTransform((width - boxWidth) / 2, (height - boxHeight) / 2, MatrixOrder.Append);
-            _document.Draw(renderer);
-        }
-        finally
-        {
-            _documentLock.Release();
+            canvas.Clear(SKColors.Transparent);
+            canvas.Translate(
+                ((width - boxWidth) / 2) + ((boxWidth - (bounds.Width * scale)) / 2),
+                ((height - boxHeight) / 2) + ((boxHeight - (bounds.Height * scale)) / 2));
+            canvas.Scale(scale);
+            canvas.Translate(-bounds.Left, -bounds.Top);
+            canvas.DrawPicture(_picture);
         }
 
-        // Encoding only touches this call's bitmap.
         var png = PooledStreamManager.GetStream($"{width}x{height}.png");
         try
         {
-            bitmap.Save(png, ImageFormat.Png);
+            if (!bitmap.Encode(png, SKEncodedImageFormat.Png, quality: 100))
+            {
+                throw new InvalidOperationException($"Encoding the {width}x{height} PNG failed.");
+            }
+
             png.Position = 0;
             return png;
         }
         catch
         {
-            await png.DisposeAsync();
+            png.Dispose();
             throw;
         }
     }
 
     /// <inheritdoc />
-    public void Dispose() => _documentLock.Dispose();
+    public void Dispose() => _svg.Dispose();
 }

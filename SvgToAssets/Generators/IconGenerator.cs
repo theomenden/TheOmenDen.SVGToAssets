@@ -17,7 +17,7 @@ internal sealed class IconGenerator(SvgRasterizer rasterizer)
     /// Renders every size and assembles the icon.
     /// </summary>
     /// <returns>A pooled stream holding the icon, positioned at 0. The caller owns it.</returns>
-    public async ValueTask<RecyclableMemoryStream> CreateIconAsync(int[] sizes, CancellationToken cancellationToken)
+    public RecyclableMemoryStream CreateIcon(int[] sizes)
     {
         ArgumentNullException.ThrowIfNull(sizes);
         if (sizes.Length == 0)
@@ -31,7 +31,7 @@ internal sealed class IconGenerator(SvgRasterizer rasterizer)
             for (var i = 0; i < sizes.Length; i++)
             {
                 ArgumentOutOfRangeException.ThrowIfGreaterThan(sizes[i], MaxIconSize, nameof(sizes));
-                images[i] = await rasterizer.RenderPngAsync(sizes[i], sizes[i], cancellationToken: cancellationToken);
+                images[i] = rasterizer.RenderPng(sizes[i], sizes[i]);
             }
 
             var icon = PooledStreamManager.GetStream("AppIcon.ico");
