@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SvgToAssets/SvgToAssets.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/SvgToAssets.Tests/SvgToAssets.Tests.csproj" />
+  </Folder>
+</Solution>

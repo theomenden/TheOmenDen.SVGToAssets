@@ -1,0 +1,37 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable central package management, https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Bogus" Version="35.6.5" />
+    <PackageVersion Include="Bogus.Text" Version="35.6.5" />
+    <PackageVersion Include="Bogus.Tools.Analyzer" Version="35.6.5" />
+    <PackageVersion Include="DotNext" Version="6.7.2" />
+    <PackageVersion Include="DotNext.IO" Version="6.7.2" />
+    <PackageVersion Include="DotNext.Threading" Version="6.7.2" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.253" />
+    <PackageVersion Include="Meziantou.Framework.ByteSize" Version="5.0.0" />
+    <PackageVersion Include="Meziantou.Framework.FullPath" Version="3.0.7" />
+    <PackageVersion Include="Meziantou.Framework.Globbing" Version="5.0.4" />
+    <PackageVersion Include="Meziantou.Framework.Slug" Version="2.0.3" />
+    <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="3.0.7" />
+    <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="4.0.1-preview" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.Enrichers.Memory" Version="1.0.4" />
+    <PackageVersion Include="Serilog.Enrichers.Process" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageVersion Include="Serilog.Formatting.Compact" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
+    <PackageVersion Include="Shouldly" Version="5.0.0-preview.2" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+    <PackageVersion Include="Svg" Version="3.4.8" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.12" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+</Project>
