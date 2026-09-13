@@ -1,35 +1,38 @@
 name: Lock files
 
 on:
-  pull_request:
+  # Runs this file as it is on main, so a PR can't edit the job that holds the token.
+  pull_request_target: # zizmor: ignore[dangerous-triggers] -- the PR's code only runs in the job without secrets
     branches: [main]
     paths:
       - '**/*.csproj'
       - '**/packages.lock.json'
       - Directory.Build.props
       - Directory.Packages.props
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  regenerate:
-    name: Regenerate lock files
-    # Fork PRs get no secrets and their branches can't be pushed to.
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+  restore:
+    name: Restore
+    # Only same-repo branches can be pushed back to.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
 
+    # Restore evaluates the PR's MSBuild files, so this job gets no secrets.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          persist-credentials: false # keep the PAT out of .git/config while restore evaluates the projects
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
 
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
@@ -37,18 +40,46 @@ jobs:
 
       - run: dotnet restore --force-evaluate
 
-      - name: Push updated lock files
+      - id: diff
+        run: |
+          git add --intent-to-add -- '*packages.lock.json'
+          git diff -- '*packages.lock.json' > "$RUNNER_TEMP/lockfiles.patch"
+          if [ -s "$RUNNER_TEMP/lockfiles.patch" ]; then echo changed=true >> "$GITHUB_OUTPUT"; fi
+
+      - if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lockfiles
+          path: ${{ runner.temp }}/lockfiles.patch
+
+  push:
+    name: Push
+    needs: restore
+    if: needs.restore.outputs.changed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    # Holds the token, so it runs no repository code and applies only lock file changes.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: lockfiles
+          path: ${{ runner.temp }}
+
+      - name: Commit and push
         env:
           TOKEN: ${{ secrets.LOCKFILE_HEAL_TOKEN }}
-          BRANCH: ${{ github.head_ref || github.ref_name }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
-          if [ -z "$(git status --porcelain -- '*packages.lock.json')" ]; then
-            echo "Lock files are up to date."
-            exit 0
-          fi
+          git apply --include='*packages.lock.json' "$RUNNER_TEMP/lockfiles.patch"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- '*packages.lock.json'
           git commit -m 'chore(deps): regenerate lock files'
-          # Pushing with a PAT, unlike GITHUB_TOKEN, triggers the Build workflow on the new commit.
-          git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
+          # A PAT push, unlike GITHUB_TOKEN, triggers the Build workflow. Rejected if the branch moved on.
+          git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
