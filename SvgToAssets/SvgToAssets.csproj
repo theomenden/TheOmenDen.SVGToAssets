@@ -48,8 +48,14 @@
 		<PackageReference Include="Spectre.Console" />
 		<PackageReference Include="Svg.Skia" />
 		<!-- SkiaSharp brings Windows and macOS natives on its own; Linux needs this. -->
-		<PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" GeneratePathProperty="true" />
 		<PackageReference Include="System.CommandLine" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="" />
+		<!-- Notices for the libraries compiled into the Skia and HarfBuzz natives; the same file ships in every NativeAssets package. -->
+		<None Include="$(PkgSkiaSharp_NativeAssets_Linux)\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="SKIASHARP-THIRD-PARTY-NOTICES.txt" Visible="false" />
 	</ItemGroup>
 
 	<PropertyGroup>
