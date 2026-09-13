@@ -1,6 +1,29 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":semanticCommits"
+  ],
+  "timezone": "America/New_York",
+  "schedule": [
+    "* 20-23 * * 3"
+  ],
+  "automerge": true,
+  "platformAutomerge": false,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* 20-23 * * 3"
+    ]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "schedule": [
+        "* 20-23 1 * *"
+      ]
+    }
   ]
 }
