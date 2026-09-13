@@ -92,6 +92,10 @@ jobs:
     if: github.ref_type == 'tag'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # The nuget.org trusted publishing policy only accepts this environment.
+    environment:
+      name: release
+      url: https://www.nuget.org/packages/SvgToAssets
     permissions:
       id-token: write # NuGet trusted publishing
 
