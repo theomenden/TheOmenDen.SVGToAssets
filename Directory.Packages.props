@@ -10,7 +10,7 @@
     <PackageVersion Include="DotNext" Version="6.7.2" />
     <PackageVersion Include="DotNext.IO" Version="6.7.2" />
     <PackageVersion Include="DotNext.Threading" Version="6.7.2" />
-    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.253" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="3.0.257" />
     <PackageVersion Include="Meziantou.Framework.ByteSize" Version="5.0.0" />
     <PackageVersion Include="Meziantou.Framework.FullPath" Version="3.0.7" />
     <PackageVersion Include="Meziantou.Framework.Globbing" Version="5.0.4" />
