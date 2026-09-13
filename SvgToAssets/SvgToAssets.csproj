@@ -15,6 +15,7 @@
 		<PackageId>SvgToAssets</PackageId>
 		<Version>0.1.0</Version>
 		<Authors>Andrew Beers</Authors>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
 		<Description>Rasterizes SVGs into WinUI app assets and multi-size .ico files.</Description>
 		<PackageTags>svg;winui;assets;icon;png</PackageTags>
 	</PropertyGroup>

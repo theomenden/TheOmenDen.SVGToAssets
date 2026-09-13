@@ -40,3 +40,7 @@ External images and elements referenced by an SVG are only loaded from the local
 The idea and the original tool come from [SvgToAssets](https://github.com/noeldev/SvgToAssets) by Noël Danjou.
 
 Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## License
+
+Licensed under the [GNU General Public License v3.0](LICENSE).
