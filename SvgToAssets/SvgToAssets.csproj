@@ -15,7 +15,7 @@
 		<PackageId>SvgToAssets</PackageId>
 		<Version>0.1.0</Version>
 		<Authors>Andrew Beers</Authors>
-		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
 		<Description>Rasterizes SVGs into WinUI app assets and multi-size .ico files.</Description>
 		<PackageTags>svg;winui;assets;icon;png</PackageTags>
 	</PropertyGroup>
@@ -54,7 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="" />
+		<None Include="..\LICENSE;..\LICENSE-NOTICE.md;..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="" />
 		<!-- Notices for the libraries compiled into the Skia and HarfBuzz natives; the same file ships in every NativeAssets package. -->
 		<None Include="$(PkgSkiaSharp_NativeAssets_Linux)\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="SKIASHARP-THIRD-PARTY-NOTICES.txt" Visible="false" />
 	</ItemGroup>

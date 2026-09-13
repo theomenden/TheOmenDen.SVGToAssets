@@ -43,4 +43,5 @@ Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md]
 
 ## License
 
-Licensed under the [GNU General Public License v3.0](LICENSE).
+Licensed under the [GNU General Public License v3.0](LICENSE) or any later version, with an additional permission
+to combine it with the Ms-PL licensed SVG.NET and Svg.Custom libraries. See [LICENSE-NOTICE.md](LICENSE-NOTICE.md).
