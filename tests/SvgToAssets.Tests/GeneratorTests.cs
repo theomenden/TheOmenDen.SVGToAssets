@@ -284,7 +284,13 @@ public sealed class GeneratorTests
         // Arrange
         var faker = CreateFaker();
         using var output = new StringWriter(CultureInfo.InvariantCulture);
-        var console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.No, Out = new AnsiConsoleOutput(output) });
+        // No enrichers: under GITHUB_ACTIONS they switch ANSI back on and the output gains escape codes.
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Ansi = AnsiSupport.No,
+            Out = new AnsiConsoleOutput(output),
+            Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false },
+        });
         var path = $"[{faker.Lorem.Word()}]/{faker.System.FileName("svg")}"; // Unescaped, Spectre would parse the brackets as a style and throw.
         var size = ByteSize.FromBytes(faker.Random.Long(1, 10_000_000));
         using var logger = new LoggerConfiguration()
