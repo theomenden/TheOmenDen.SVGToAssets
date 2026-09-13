@@ -79,6 +79,37 @@ public sealed class GeneratorTests
     }
 
     [Fact]
+    public void SvgRasterizer_ShouldKeepPaddingClearAndFillTranslucent_WhenArtworkIsSemiTransparent()
+    {
+        // Arrange
+        var faker = CreateFaker();
+        var hex = faker.Internet.Color();
+        var opacity = faker.Random.Float(0.25f, 0.75f);
+        var size = faker.Random.Int(32, 256);
+        var svg = string.Create(
+            CultureInfo.InvariantCulture,
+            $"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="{hex}" fill-opacity="{opacity}"/></svg>""");
+        using var rasterizer = new SvgRasterizer(SKSvg.CreateFromSvg(svg));
+        var color = SKColor.Parse(hex);
+        var alpha = (int)MathF.Round(opacity * 255);
+
+        // Act
+        using var png = rasterizer.RenderPng(size, size, contentScale: 0.5f);
+        using var bitmap = SKBitmap.Decode(png);
+        var corner = bitmap.GetPixel(0, 0);
+        var center = bitmap.GetPixel(size / 2, size / 2);
+
+        // Assert
+        // Premultiplied storage rounds each channel, so allow a couple of levels either way.
+        Should.Satisfy(
+        [
+            () => corner.Alpha.ShouldBe((byte)0),
+            () => ((int)center.Alpha).ShouldBeInRange(alpha - 1, alpha + 1),
+            () => new[] { center.Red - color.Red, center.Green - color.Green, center.Blue - color.Blue }.ShouldAllBe(d => Math.Abs(d) <= 2)
+        ]);
+    }
+
+    [Fact]
     public void IconGenerator_ShouldPointDirectoryAtPngEntriesOfRequestedSizes_WhenCreatingIcon()
     {
         // Arrange
