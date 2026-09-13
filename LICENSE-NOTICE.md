@@ -2,7 +2,7 @@
 
 ```text
 SvgToAssets - converts SVG images into the visual assets of a WinUI 3 app.
-Copyright (C) 2026 Andrew Beers
+Copyright (C) 2026 The Omen Den L.L.C.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
