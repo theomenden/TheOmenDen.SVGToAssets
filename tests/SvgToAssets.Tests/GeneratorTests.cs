@@ -291,6 +291,7 @@ public sealed class GeneratorTests
             Out = new AnsiConsoleOutput(output),
             Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false },
         });
+        console.Profile.Width = int.MaxValue; // Without a terminal the width falls back to 80 and long generated paths wrap.
         var path = $"[{faker.Lorem.Word()}]/{faker.System.FileName("svg")}"; // Unescaped, Spectre would parse the brackets as a style and throw.
         var size = ByteSize.FromBytes(faker.Random.Long(1, 10_000_000));
         using var logger = new LoggerConfiguration()
