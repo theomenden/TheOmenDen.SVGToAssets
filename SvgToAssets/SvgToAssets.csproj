@@ -53,8 +53,8 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<!-- Platforms whose Skia/HarfBuzz natives go into the tool package; anywhere else Skia fails to load. -->
-		<ToolNativeRuntimes>;win-x64;win-arm64;osx;linux-x64;linux-arm64;linux-musl-x64;linux-musl-arm64;</ToolNativeRuntimes>
+		<!-- x64 desktops only: Skia fails to load anywhere else. The osx natives are universal, so Apple Silicon comes along. -->
+		<ToolNativeRuntimes>;win-x64;linux-x64;osx;</ToolNativeRuntimes>
 	</PropertyGroup>
 
 	<!-- ponytail: one portable package carries every kept platform; RID-specific tool packages would ship one each if size matters. -->
