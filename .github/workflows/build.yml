@@ -1,0 +1,111 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    # Stable releases only; GitVersion can't match a prerelease tag's label to the detached tag checkout.
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # The tool ships Skia natives for these three; test each one.
+        os: [ubuntu-24.04, windows-2025, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # GitVersion needs the full history and tags
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: gittools/actions/gitversion/setup@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          versionSpec: 6.8.x
+
+      - id: gitversion
+        uses: gittools/actions/gitversion/execute@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+
+      - name: Check release tag
+        if: github.ref_type == 'tag'
+        env:
+          VERSION: ${{ steps.gitversion.outputs.semVer }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::GitVersion computed $VERSION for tag $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - run: dotnet restore --locked-mode
+
+      - name: Build
+        env:
+          VERSION: ${{ steps.gitversion.outputs.semVer }}
+        run: dotnet build -c Release --no-restore -p:Version="$VERSION" -p:ContinuousIntegrationBuild=true
+
+      - name: Test
+        env:
+          BOGUS_PREMIUM_LICENSE: ${{ secrets.BOGUS_PREMIUM_LICENSE }}
+        run: |
+          printf '%s' "$BOGUS_PREMIUM_LICENSE" > Bogus.Premium.LicenseKey
+          dotnet test -c Release --no-build
+
+      - name: Pack
+        if: runner.os == 'Linux'
+        env:
+          VERSION: ${{ steps.gitversion.outputs.semVer }}
+        run: dotnet pack SvgToAssets -c Release --no-build -o artifacts -p:Version="$VERSION"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: runner.os == 'Linux'
+        with:
+          name: nupkg
+          path: artifacts/*.nupkg
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      id-token: write # NuGet trusted publishing
+
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: nupkg
+          path: artifacts
+
+      - id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate

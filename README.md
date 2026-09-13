@@ -2,11 +2,15 @@
 
 A .NET tool that turns SVGs into the visual assets and `AppIcon.ico` a WinUI 3 app needs.
 
-Runs on x64 Windows, Linux and macOS with the .NET 10 runtime.
+Runs on x64 Windows, Linux and macOS with the .NET 10 runtime. Linux also needs `libfontconfig1`.
 
 ## Install
 
-Build the tool package and install it from the local folder:
+```sh
+dotnet tool install --global SvgToAssets
+```
+
+Or build the tool package and install it from the local folder:
 
 ```sh
 dotnet pack -c Release -o artifacts

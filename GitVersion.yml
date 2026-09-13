@@ -1,0 +1,11 @@
+workflow: GitHubFlow/v1
+next-version: 0.1.0
+# Conventional Commits drive the bump: feat -> minor, fix/perf -> patch, "!" or BREAKING CHANGE -> major.
+major-version-bump-message: '^\w+(\(.+\))?!:|BREAKING CHANGE:'
+minor-version-bump-message: '^feat(\(.+\))?:'
+patch-version-bump-message: '^(fix|perf)(\(.+\))?:'
+branches:
+  unknown:
+    # Tag builds check out a detached HEAD that GitVersion names "tags/v1.2.3"; use the tag as-is.
+    prevent-increment:
+      when-current-commit-tagged: true

@@ -13,12 +13,16 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>svgtoassets</ToolCommandName>
 		<PackageId>SvgToAssets</PackageId>
+		<!-- Local builds only; CI passes the GitVersion-computed version. -->
 		<Version>0.1.0</Version>
 		<Authors>The Omen Den L.L.C.</Authors>
 		<Copyright>Copyright (C) 2026 The Omen Den L.L.C.</Copyright>
 		<PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
 		<Description>Rasterizes SVGs into WinUI app assets and multi-size .ico files.</Description>
 		<PackageTags>svg;winui;assets;icon;png</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://github.com/theomenden/TheOmenDen.SVGToAssets</PackageProjectUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -55,7 +59,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\LICENSE;..\LICENSE-NOTICE.md;..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="" />
+		<None Include="..\README.md;..\LICENSE;..\LICENSE-NOTICE.md;..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="" />
 		<!-- Notices for the libraries compiled into the Skia and HarfBuzz natives; the same file ships in every NativeAssets package. -->
 		<None Include="$(PkgSkiaSharp_NativeAssets_Linux)\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="SKIASHARP-THIRD-PARTY-NOTICES.txt" Visible="false" />
 	</ItemGroup>
