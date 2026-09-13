@@ -1,0 +1,54 @@
+name: Lock files
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.csproj'
+      - '**/packages.lock.json'
+      - Directory.Build.props
+      - Directory.Packages.props
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    name: Regenerate lock files
+    # Fork PRs get no secrets and their branches can't be pushed to.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          persist-credentials: false # keep the PAT out of .git/config while restore evaluates the projects
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - run: dotnet restore --force-evaluate
+
+      - name: Push updated lock files
+        env:
+          TOKEN: ${{ secrets.LOCKFILE_HEAL_TOKEN }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if [ -z "$(git status --porcelain -- '*packages.lock.json')" ]; then
+            echo "Lock files are up to date."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*packages.lock.json'
+          git commit -m 'chore(deps): regenerate lock files'
+          # Pushing with a PAT, unlike GITHUB_TOKEN, triggers the Build workflow on the new commit.
+          git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
