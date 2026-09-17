@@ -43,9 +43,9 @@
       },
       "Meziantou.Framework.FullPath": {
         "type": "Direct",
-        "requested": "[3.0.8, )",
-        "resolved": "3.0.8",
-        "contentHash": "ECGtCnixJf1Zuauwg7vbCOgRyzIh4amVG2/b/PahutxRZQMOLGH8Wa3zX+or4NII9pOsjkftlBnkF7Xx+OW/yg=="
+        "requested": "[3.0.9, )",
+        "resolved": "3.0.9",
+        "contentHash": "briYiXNUMum9lU20EtqvbN3ukBfLPq8mrPZ8v2nOwBNbrjDd6lu7g4+qFnUUuJxOhK4ZOBRvPNvqIsg612VXbA=="
       },
       "Meziantou.Framework.Globbing": {
         "type": "Direct",
