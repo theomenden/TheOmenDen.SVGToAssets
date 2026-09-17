@@ -301,7 +301,7 @@
           "DotNext.IO": "[6.7.2, )",
           "DotNext.Threading": "[6.7.2, )",
           "Meziantou.Framework.ByteSize": "[5.0.0, )",
-          "Meziantou.Framework.FullPath": "[3.0.8, )",
+          "Meziantou.Framework.FullPath": "[3.0.9, )",
           "Meziantou.Framework.Globbing": "[5.0.4, )",
           "Meziantou.Framework.Slug": "[2.0.3, )",
           "Microsoft.IO.RecyclableMemoryStream": "[4.0.1-preview, )",
@@ -355,9 +355,9 @@
       },
       "Meziantou.Framework.FullPath": {
         "type": "CentralTransitive",
-        "requested": "[3.0.8, )",
-        "resolved": "3.0.8",
-        "contentHash": "ECGtCnixJf1Zuauwg7vbCOgRyzIh4amVG2/b/PahutxRZQMOLGH8Wa3zX+or4NII9pOsjkftlBnkF7Xx+OW/yg=="
+        "requested": "[3.0.9, )",
+        "resolved": "3.0.9",
+        "contentHash": "briYiXNUMum9lU20EtqvbN3ukBfLPq8mrPZ8v2nOwBNbrjDd6lu7g4+qFnUUuJxOhK4ZOBRvPNvqIsg612VXbA=="
       },
       "Meziantou.Framework.Globbing": {
         "type": "CentralTransitive",
