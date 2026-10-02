@@ -23,7 +23,7 @@ jobs:
     name: Restore
     # Manual runs need a branch to push to; PRs only from this repo, since fork branches can't be pushed to.
     if: (github.event_name == 'workflow_dispatch' && github.ref_type == 'branch') || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     outputs:
       changed: ${{ steps.diff.outputs.changed }}
@@ -57,7 +57,7 @@ jobs:
     name: Push
     needs: restore
     if: needs.restore.outputs.changed == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
 
     # Holds the token, so it runs no repository code and applies only lock file changes.
