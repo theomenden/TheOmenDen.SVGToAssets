@@ -49,9 +49,9 @@
       },
       "Meziantou.Framework.Globbing": {
         "type": "Direct",
-        "requested": "[5.0.4, )",
-        "resolved": "5.0.4",
-        "contentHash": "ivRTelW9udb+ets/qTUO2VnaFQohZCWMYUIM+aL/DkLSaVMdXbiFxU6tpuHstsvrfRE990gPfwsG07sbKvX+Cg=="
+        "requested": "[5.0.7, )",
+        "resolved": "5.0.7",
+        "contentHash": "5tMq8zZbgEMOBtFFtYrtT1mfmI8od1uDlaKsyur80H7Wlk2PI1NSQcRg2pvP+sDvYMHQQfiAZMgoixgmqDeVsQ=="
       },
       "Meziantou.Framework.Slug": {
         "type": "Direct",
