@@ -37,9 +37,9 @@
       },
       "Meziantou.Framework.ByteSize": {
         "type": "Direct",
-        "requested": "[5.0.1, )",
-        "resolved": "5.0.1",
-        "contentHash": "ERiWr0fOfhzrJjlvGWJk0eUS0nii+2PFBx/TVVE5MBNHg9MMRTmFLGkRv+bPMiKwsDSQPS22uU6xMfjfZOS1lg=="
+        "requested": "[5.0.2, )",
+        "resolved": "5.0.2",
+        "contentHash": "/ByF3uoiJRpfjqL8aBRzJnptvnqWMtku4lRdiJX2Qy/YBwKoYKY058S2i6qZ7r/SmnTLvTNVbMnysU7TfRKB8Q=="
       },
       "Meziantou.Framework.FullPath": {
         "type": "Direct",
